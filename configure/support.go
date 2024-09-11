@@ -1,0 +1,158 @@
+package configure
+
+import (
+	"flag"
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"time"
+
+	"github.com/fatih/color"
+)
+
+func Help(flags *flag.FlagSet) {
+	fmt.Print("command format: mytool [arguments] {target}\n\n")
+	fmt.Print("flags:\n")
+
+	var flagName []string
+
+	flags.VisitAll(func(f *flag.Flag) {
+		flagName = append(flagName, f.Name)
+	})
+
+	sort.Strings(flagName)
+
+	for _, name := range flagName {
+		f := flags.Lookup(name)
+		usage := strings.ReplaceAll(f.Usage, "string", "")
+		fmt.Printf("  -%s\t%s\n", f.Name, usage)
+	}
+
+	print("\n")
+
+	os.Exit(0)
+}
+
+func CleanResultFiles() {
+	os.RemoveAll("results/")
+}
+
+func CreateFolder() string {
+	fullPath := "results/" + "FullOperation-" + time.Now().Format("2006-01-02 15:04:05")
+	makeFileErr := os.MkdirAll(fullPath, os.ModePerm)
+	if makeFileErr != nil {
+		fmt.Println(makeFileErr)
+	}
+	return fullPath
+}
+
+func LoadingIcon(stop chan bool) string {
+	spinner := []string{"^owo^", "^=w=^"} // Customize the spinner with desired Unicode characters
+
+	for {
+		for _, symbol := range spinner {
+			fmt.Printf("\r%s ", symbol)
+			time.Sleep(250 * time.Millisecond)
+		}
+		select {
+		case <-stop:
+			// Stop the goroutine when a signal is received on the stop channel
+			break
+		default:
+		}
+	}
+}
+
+func SystemTextWrap(text string, lineLength int) []string {
+	var lines []string
+	words := strings.Fields(text)
+	currentLine := ""
+
+	for _, word := range words {
+		if len(currentLine)+len(word)+1 <= lineLength {
+			if currentLine != "" {
+				currentLine += " "
+			}
+			currentLine += word
+		} else {
+			lines = append(lines, currentLine)
+			currentLine = word
+		}
+	}
+
+	if currentLine != "" {
+		lines = append(lines, currentLine)
+	}
+
+	return lines
+}
+
+func padRight(s string, width int) string {
+	return (s + strings.Repeat(" ", width-len(s)))
+}
+
+func SystemAlert(msg string) {
+	red := color.New(color.FgHiRed).SprintFunc()
+	boxTop := ` ____________________________________________________`
+	boxTitle := `|` + red(`X`) + `                   ` + red(`System Alert`) + `                   ` + red(`X`) + `|`
+	boxSpace := `|                                                    |`
+	boxBottom := `|____________________________________________________|`
+
+	fmt.Println(boxTop)
+	fmt.Println(boxTitle)
+	fmt.Println(boxSpace)
+	wrappedLines := SystemTextWrap(msg, 51)
+	for _, line := range wrappedLines {
+		fmt.Printf("| %s|\n", red(padRight(line, 51)))
+	}
+	fmt.Println(boxBottom)
+}
+
+func SystemMessage(msg []byte) {
+	green := color.New(color.FgHiGreen).SprintFunc()
+	boxTop := ` ____________________________________________________`
+	boxTitle := `|` + green(`X`) + `                 ` + green(`System Message`) + `                   ` + green(`X`) + `|`
+	boxSpace := `|                                                    |`
+	boxBottom := `|____________________________________________________|`
+
+	fmt.Println(boxTop)
+	fmt.Println(boxTitle)
+	fmt.Println(boxSpace)
+	ascii := string(msg[:])
+	wrappedLines := SystemTextWrap(ascii, 51)
+	for _, line := range wrappedLines {
+		fmt.Printf("| %s|\n", green(padRight(line, 51)))
+	}
+	fmt.Println(boxBottom)
+}
+
+func BabyCastingMagic() {
+
+	art := `
+           ∧＿∧
+          (・◦・)   ✧･ﾟ:*     MAGIC PEU PEU
+          /づ~ ♡･ﾟ:*:･★‧₊˚
+		  `
+	fmt.Println(art)
+}
+
+func BabyAsking() {
+
+	art := `
+                    /＞　 フ
+                   | 　_　_|     of course my child
+                  ／ ミ＿xノ 
+                 /　　　　|
+                /　　　　 |
+               /　　　　  |
+              /　 ヽ　　  ﾉ
+             / │　　|　|　|       ╱|、
+            / │　　 |　|　|      (˚ˎ。7   may I perform some magic
+    _______|  |     |　|　|      |、 ˜〵
+   (___________ヽ___ヽ_)__)      じしˍ,)ノ
+		
+
+		  `
+	fmt.Println(art)
+}

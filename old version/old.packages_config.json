@@ -1,0 +1,10 @@
+{
+  "nmap": {
+    "name": "nmap",
+    "installed": true
+  },
+  "sqlmap": {
+    "name": "sqlmap",
+    "installed": true
+  }
+}

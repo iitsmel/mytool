@@ -1,0 +1,91 @@
+package main
+
+import (
+	"bytes"
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof" // Import pprof for profiling
+	"os"
+	"os/signal"
+	"syscall"
+
+	"mytool/pentestANDredteam"
+)
+
+func Pentest(prFlag *pentestANDredteam.Scope, args []string) pentestANDredteam.Scope {
+	flagSet := flag.NewFlagSet("pentest", flag.ContinueOnError)
+
+	// default feature
+	flagSet.BoolVar(&prFlag.General.Delete, "r", false, "Delete all files in Result folder.")
+
+	// pentest basic & feature
+	flagSet.StringVar(&prFlag.HTTP.URL, "u", prFlag.HTTP.URL, "Show HTTP response status code.")
+	flagSet.StringVar(&prFlag.HTTP.Domain, "s", prFlag.HTTP.Domain, "Subdomains Enumeration")
+	flagSet.BoolVar(&prFlag.General.Help, "h", false, "Show flags useages.")
+	flagSet.BoolVar(&prFlag.General.Detail, "d", false, "Show futher details.")
+	flagSet.BoolVar(&prFlag.General.Ignore, "i", false, "Proceed when HTTP response is not 200.")
+
+	// pentest attack
+	flagSet.StringVar(&prFlag.XSS.Target, "xss", prFlag.XSS.Target, "Use XSS attack.")
+	flagSet.StringVar(&prFlag.SQLInjection.Target, "sql", prFlag.SQLInjection.Target, "Use SQL Injection attack.")
+
+	// auto-testing plans
+	flagSet.StringVar(&prFlag.Plan.Target, "OA", prFlag.Plan.Target, "aggressive operation")
+	flagSet.StringVar(&prFlag.Plan.Target, "OP", prFlag.Plan.Target, "passive operation")
+
+	// Set the output destination to a custom buffer for capturing the error message
+	errorBuffer := bytes.Buffer{}
+	flagSet.SetOutput(&errorBuffer)
+
+	// Set up environment
+	pentestANDredteam.EnvironmentSetup()
+
+	// Check for errors
+	flagerr := flagSet.Parse(args)
+
+	if flagerr != nil {
+		pentestANDredteam.BabyAsking()
+		fmt.Println(flagerr)
+		pentestANDredteam.Help(flagSet)
+	}
+
+	// Print help message and exit if
+	// 1. there is no flag
+	// 2. the -h flag is provided
+	if len(args) == 0 || prFlag.General.Help {
+		pentestANDredteam.BabyAsking()
+		pentestANDredteam.Help(flagSet)
+	}
+
+	if prFlag.General.Delete {
+		pentestANDredteam.CleanResultFiles()
+	}
+
+	return *prFlag
+}
+
+func main() {
+	// Start pprof server in a separate goroutine
+	go func() {
+		log.Println("Starting pprof server on :6060")
+		if err := http.ListenAndServe(":6060", nil); err != nil {
+			log.Fatalf("pprof server failed: %v", err)
+		}
+	}()
+
+	// Setup signal handling to keep the application running
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Block the main goroutine until an interrupt signal is received
+	log.Println("Application is running. Press Ctrl+C to exit.")
+	<-sigchan
+	log.Println("Received signal, shutting down.")
+
+	ptrt := pentestANDredteam.Scope{}
+	args := os.Args[1:]
+	Pentest(&ptrt, args)
+	pentestANDredteam.ParsingFlag(&ptrt, args)
+}
