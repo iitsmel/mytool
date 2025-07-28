@@ -3,14 +3,19 @@ package configure
 type Scope struct {
 	HTTP    HTTPscope
 	General Generalscope
-	Pentest Penetrationscope
+	Plan    Planscope
+	Attack  AttackFeature
+}
+
+type AttackFeature struct {
+	XSS    bool
+	SQL    bool
+	Target string
 }
 
 type Generalscope struct {
-	Exit string
-	Help bool
-	Mode string
-
+	Exit       string
+	Help       bool
 	FlagGarage []string
 	Detail     bool
 	Ignore     bool
@@ -25,7 +30,6 @@ type HTTPscope struct {
 	Cookie       int
 }
 
-type Penetrationscope struct {
-	XSS          bool
-	SQLInjection bool
+type Planscope struct {
+	Target string
 }
