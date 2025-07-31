@@ -23,8 +23,6 @@ type Generalscope struct {
 }
 
 type HTTPscope struct {
-	URL          string
-	Domain       string
 	Port         int
 	ResponseCode string
 	Cookie       int

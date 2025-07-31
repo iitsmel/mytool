@@ -3,6 +3,7 @@ package configure
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -14,7 +15,7 @@ func MakeRequest(url string) (*http.Response, error) {
 }
 
 func ShowResponse(passing *Scope) {
-	URL := passing.HTTP.URL
+	URL := passing.Attack.Target
 	responsing, errormsg := MakeRequest(URL)
 
 	if errormsg != nil {
@@ -29,13 +30,15 @@ func ShowResponse(passing *Scope) {
 	fmt.Println("Transfer Encoding:  ", responsing.TransferEncoding)
 }
 
-func CheckTargetStatus(target string) bool {
-	response, errorStatus := http.Get(target)
+func CheckTargetStatus(passing *Scope) bool {
+	response, errorStatus := http.Get(passing.Attack.Target)
 
-	if errorStatus != nil || response.StatusCode != http.StatusOK {
-		return false
+	if errorStatus != nil {
+		fmt.Printf("HTTP request failed: %v\n", errorStatus)
+		os.Exit(0)
 	}
 
 	defer response.Body.Close()
-	return true
+
+	return response.StatusCode != http.StatusOK
 }

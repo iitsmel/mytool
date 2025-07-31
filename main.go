@@ -15,11 +15,13 @@ func Settings(flags *configure.Scope, args []string) configure.Scope {
 
 	// default feature
 	flagSet.BoolVar(&flags.General.Delete, "r", false, "Delete all files in Result folder.")
-	flagSet.StringVar(&flags.HTTP.URL, "u", flags.HTTP.URL, "Show HTTP response status code.")
-	flagSet.StringVar(&flags.HTTP.Domain, "s", flags.HTTP.Domain, "Subdomains Enumeration")
-	flagSet.BoolVar(&flags.General.Ignore, "i", true, "Proceed when HTTP response is not 200.")
-	//flagSet.IntVar(&flags.HTTP.Cookie, "cookie", flags.HTTP.Cookie, "Length of cookie.")
+	flagSet.StringVar(&flags.Attack.Target, "u", flags.Attack.Target, "Show HTTP response status code.")
+	flagSet.StringVar(&flags.Attack.Target, "s", flags.Attack.Target, "Subdomains Enumeration")
 	flagSet.BoolVar(&flags.General.Help, "h", false, "Show flags useage.")
+
+	// archived
+	//flagSet.BoolVar(&flags.General.Ignore, "i", false, "Proceed when HTTP response is not 200.")
+	//flagSet.IntVar(&flags.HTTP.Cookie, "cookie", flags.HTTP.Cookie, "Length of cookie.")
 
 	// pentest attack
 	flagSet.BoolVar(&flags.Attack.XSS, "xss", false, "Use XSS attack.")

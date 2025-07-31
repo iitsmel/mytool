@@ -10,19 +10,22 @@ type OutcomeFunc func(penconfig *Scope)
 
 func ParseFlags(penconfig *Scope, flags []string) {
 	target := FilteringURL(flags, penconfig)
-	flagSequence := []string{"-i", "-d", "-s", "-u", "-xss", "-sql", "-OA", "-OP"}
+	flagSequence := []string{"-r", "-h", "-u", "-s", "-xss", "-sql", "-OA", "-OP"}
+	BabyCastingMagic()
 
 	for _, flag := range flagSequence {
 		if FlagFound(penconfig.General.FlagGarage, flag) {
 			penconfigCopy := *penconfig
-			penconfigCopy.HTTP.URL = target
 			penconfigCopy.Attack.Target = target
 			GeneratingResponse(flag, &penconfigCopy)
+			fmt.Println()
 		}
 	}
 }
 
 func GeneratingResponse(flag string, penconfig *Scope) {
+	CheckTargetStatus(penconfig)
+
 	conditionMap := map[string]OutcomeFunc{
 		"-u":   func(httpconfig *Scope) { ShowResponse(httpconfig) },
 		"-s":   func(subemu *Scope) { SubdomainEnumeration(subemu) },
@@ -32,7 +35,6 @@ func GeneratingResponse(flag string, penconfig *Scope) {
 		"-OP":  func(tool *Scope) { DoLight(tool) },
 	}
 	if outcomeFunc, ok := conditionMap[flag]; ok {
-		BabyCastingMagic()
 		outcomeFunc(penconfig)
 	} else {
 		fmt.Println("Invalid flag:", flag)
@@ -54,7 +56,7 @@ func FilteringURL(flags []string, penconfig *Scope) string {
 
 		case strings.HasPrefix(flag, "http://") || strings.HasPrefix(flag, "https://"):
 			if url != "" {
-				fmt.Println("Multiple URLs are not allowed. Please provide only one URL.")
+				fmt.Println("Multiple URLs are not allowed. Please provide one URL per time.")
 				os.Exit(1)
 			}
 			url = flag
